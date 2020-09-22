@@ -1,10 +1,12 @@
-# Helm Chart for Pipelinewise
+# Helm Chart for PipelineWise
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Introduction
 
-This [Helm](https://github.com/kubernetes/helm) chart installs a CronJob in a Kubernetes cluster. This CronJob takes a Pipelinewise configuration and runs a sync job between a tap and a target
+This [Helm](https://github.com/kubernetes/helm) chart installs a CronJob in a Kubernetes cluster. This CronJob takes a Pipelinewise configuration and runs a sync job between a tap and a target.
+
+PipelineWise is a Data Pipeline Framework using the Singer.io specification to ingest and replicate data from various sources to various destinations. You can read more about PipelineWise [here](https://transferwise.github.io/pipelinewise/).
 
 ## Prerequisites
 
@@ -21,7 +23,7 @@ First, we need to create a kubernetes secret from the configuration files so we 
 
 Assuming we have a `tap_mysql.yml` and a `target_snowflake.yml` config files, this would be the command to generate the secret: 
 ```bash
-`kubectl create secret generic mysql-sf-secret --from-file=./tap_mysql.yml --from-file=./target_snowflake.yml`
+kubectl create secret generic mysql-sf-secret --from-file=./tap_mysql.yml --from-file=./target_snowflake.yml
 ```
 
 ### Add Helm repository
