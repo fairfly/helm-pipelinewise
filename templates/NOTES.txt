@@ -1,0 +1,4 @@
+Your release is named {{ .Release.Name }}.
+Your CronJob has been deployed with the name {{ include "pipelinewise.fullname" . }}
+
+It will sync between tap "{{ .Values.tapName }}" and target "{{ .Values.targetName }}" with a schedule of {{ .Values.schedule }}

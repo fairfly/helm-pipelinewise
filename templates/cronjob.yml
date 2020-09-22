@@ -1,0 +1,83 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "pipelinewise.fullname" . }}
+  labels:
+    {{- include "pipelinewise.selectorLabels" . | nindent 8 }}
+spec:
+  schedule: {{ .Values.schedule }}
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          initContainers:
+            - name: {{ .Chart.Name }}-importer
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              volumeMounts:
+                - name: pplconfig
+                  mountPath: "/etc/pplconfig"
+                  readOnly: true
+                - name: state-storage
+                  mountPath: "/root/.pipelinewise"
+              command:
+                - "/app/entrypoint.sh"
+                - "import"
+                - "--dir"
+                - "/etc/pplconfig"
+              imagePullPolicy: Always
+              {{- with .Values.env }}
+              env:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          containers:
+            - name: {{ .Chart.Name }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              volumeMounts:
+                - name: pplconfig
+                  mountPath: "/etc/pplconfig"
+                  readOnly: true
+                - name: state-storage
+                  mountPath: "/root/.pipelinewise"
+              command:
+                - "/app/entrypoint.sh"
+                - "run_tap"
+                - "--tap"
+                - {{ .Values.tapName }}
+                - "--target"
+                - {{ .Values.targetName }}
+              imagePullPolicy: Always
+              {{- with .Values.env }}
+              env:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          volumes:
+            - name: pplconfig
+              secret:
+                secretName: {{ .Values.pipelinewiseConfigSecretName }}
+            - name: state-storage
+              persistentVolumeClaim:
+                claimName: {{ include "pipelinewise.fullname" . }}-pvc
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

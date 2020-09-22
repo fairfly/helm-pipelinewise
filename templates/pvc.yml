@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pipelinewise.fullname" . }}-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName:  {{ .Values.persistence.storageClass | quote }}
+  resources:
+    requests:
+      storage:  {{ .Values.persistence.storage }}
